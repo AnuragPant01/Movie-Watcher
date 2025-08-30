@@ -2,6 +2,12 @@
 
 A modern, responsive movie discovery application built with Angular 18 that helps you find the perfect movie based on your mood. Discover, search, and save your favorite movies with a beautiful, intuitive interface.
 
+## 🌐 Live Demo
+
+**🎬 [View Live Application](https://watch-listly.netlify.app/)**
+
+Experience the full application with all features including mood-based movie discovery, search functionality, and personal watchlist management.
+
 ## ✨ Features
 
 ### 🎯 **Movie Discovery by Mood**
