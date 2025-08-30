@@ -1,0 +1,42 @@
+<section class="max-w-6xl mx-auto p-4">
+  <div class="relative overflow-hidden rounded-xl bg-gradient-to-b from-brand-50 to-white dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-800 p-6 mb-6">
+    <h1 class="text-3xl sm:text-4xl font-bold mb-2 tracking-tight">What Should I Watch Tonight?</h1>
+    <p class="text-gray-600 dark:text-gray-300 mb-4 max-w-2xl">Pick a mood to get curated suggestions, or head to search to find exactly what you want.</p>
+
+    <div class="flex flex-wrap gap-2">
+      <button type="button" class="px-3 py-2 rounded-full border border-gray-300 dark:border-gray-700 hover:border-brand-600 hover:text-brand-700 dark:hover:text-brand-50 transition"
+              [class.bg-brand-600]="selectedMood() === 'feel-good'"
+              [class.text-white]="selectedMood() === 'feel-good'"
+              (click)="selectMood('feel-good')">Feel Good</button>
+      <button type="button" class="px-3 py-2 rounded-full border border-gray-300 dark:border-gray-700 hover:border-brand-600 hover:text-brand-700 dark:hover:text-brand-50 transition"
+              [class.bg-brand-600]="selectedMood() === 'action-fix'"
+              [class.text-white]="selectedMood() === 'action-fix'"
+              (click)="selectMood('action-fix')">Action Fix</button>
+      <button type="button" class="px-3 py-2 rounded-full border border-gray-300 dark:border-gray-700 hover:border-brand-600 hover:text-brand-700 dark:hover:text-brand-50 transition"
+              [class.bg-brand-600]="selectedMood() === 'mind-benders'"
+              [class.text-white]="selectedMood() === 'mind-benders'"
+              (click)="selectMood('mind-benders')">Mind Benders</button>
+
+      <a routerLink="/search" class="ml-auto inline-flex items-center gap-2 text-sm underline-offset-4 hover:underline">Go to Search →</a>
+    </div>
+
+    <div class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-brand-600/10 blur-2xl"></div>
+  </div>
+
+  @if (loading()) {
+    <div class="p-6">Loading…</div>
+  } @else if (error()) {
+    <div class="p-6 text-red-600">{{ error() }}</div>
+  } @else if (movies().length) {
+    <app-row title="Top picks for your mood">
+      @for (m of movies(); track m.id; let idx = $index) {
+        <div class="relative flex-none w-[180px] sm:w-[200px] min-w-[180px] sm:min-w-[200px] snap-start">
+          <div class="absolute -left-2 -top-2 z-10 text-lg font-bold text-gray-800 dark:text-gray-200 drop-shadow">{{ idx + 1 }}.</div>
+          <app-movie-card [id]="m.id" [title]="m.title" [posterPath]="m.poster_path" [releaseDate]="m.release_date" [voteAverage]="m.vote_average" [compact]="true" />
+        </div>
+      }
+    </app-row>
+  } @else if (selectedMood()) {
+    <div class="p-6 text-gray-600">No results.</div>
+  }
+</section> 
