@@ -1,10 +1,9 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { NgOptimizedImage } from '@angular/common';
 
 @Component({
   selector: 'app-person-chip',
   standalone: true,
-  imports: [NgOptimizedImage],
+  imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'inline-flex flex-col items-center text-center',

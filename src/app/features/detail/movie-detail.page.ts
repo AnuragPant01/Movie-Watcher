@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { AsyncPipe, DecimalPipe, DatePipe, NgIf, NgFor, NgOptimizedImage } from '@angular/common';
+import { AsyncPipe, DecimalPipe, DatePipe, NgIf, NgFor } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { TmdbService } from '../../core/tmdb.service';
 import { TMDB_IMAGE_BASE, TMDB_POSTER_SIZE } from '../../core/tmdb.models';
@@ -11,13 +11,13 @@ import { PersonChipComponent } from '../../shared/person-chip/person-chip.compon
 @Component({
   selector: 'app-movie-detail-page',
   standalone: true,
-  imports: [RouterLink, AsyncPipe, DecimalPipe, DatePipe, NgIf, NgFor, NgOptimizedImage, MovieCardComponent, RowComponent, PersonChipComponent],
+  imports: [RouterLink, AsyncPipe, DecimalPipe, DatePipe, NgIf, NgFor, MovieCardComponent, RowComponent, PersonChipComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   templateUrl: './movie-detail.page.html',
   styleUrl: './movie-detail.page.scss'
 })
-export class MovieDetailPage {
+export class MovieDetailPage implements OnInit {
   private readonly api = inject(TmdbService);
   private readonly route = inject(ActivatedRoute);
   private readonly sanitizer = inject(DomSanitizer);
@@ -51,7 +51,16 @@ export class MovieDetailPage {
       if (!Number.isFinite(id)) return;
       this.id.set(id);
       this.fetch(id);
+      this.scrollToTop();
     });
+  }
+
+  ngOnInit(): void {
+    this.scrollToTop();
+  }
+
+  private scrollToTop(): void {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   private fetch(id: number): void {
@@ -73,5 +82,10 @@ export class MovieDetailPage {
 
   youtubeEmbed(key: string): SafeResourceUrl {
     return this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${key}`);
+  }
+
+  onThumbnailError(event: Event, videoKey: string): void {
+    const img = event.target as HTMLImageElement;
+    img.src = `https://img.youtube.com/vi/${videoKey}/hqdefault.jpg`;
   }
 } 

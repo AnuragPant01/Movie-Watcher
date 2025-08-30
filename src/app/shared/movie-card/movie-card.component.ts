@@ -1,12 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { DecimalPipe, NgOptimizedImage } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { TMDB_IMAGE_BASE, TMDB_POSTER_SIZE } from '../../core/tmdb.models';
+import { WatchlistService } from '../../core/watchlist.service';
 
 @Component({
   selector: 'app-movie-card',
   standalone: true,
-  imports: [RouterLink, DecimalPipe, NgOptimizedImage],
+  imports: [RouterLink, DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'inline-block rounded overflow-hidden bg-white dark:bg-gray-900',
@@ -17,6 +18,8 @@ import { TMDB_IMAGE_BASE, TMDB_POSTER_SIZE } from '../../core/tmdb.models';
   styleUrl: './movie-card.component.scss'
 })
 export class MovieCardComponent {
+  private readonly watchlistService = inject(WatchlistService);
+
   id = input.required<number>();
   title = input.required<string>();
   posterPath = input<string | null>(null);
@@ -29,8 +32,30 @@ export class MovieCardComponent {
     return date ? new Date(date).getFullYear() : '—';
   });
 
-  readonly imageUrl = computed(() => {
-    const path = this.posterPath();
-    return path ? `${TMDB_IMAGE_BASE}/${TMDB_POSTER_SIZE}${path}` : '';
+  readonly isInWatchlist = computed(() => {
+    const movieId = this.id();
+    return movieId ? this.watchlistService.isInWatchlist(movieId) : false;
   });
+
+  toggleWatchlist(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const movieId = this.id();
+    if (!movieId) return;
+    
+    const isInWatchlist = this.isInWatchlist();
+    
+    if (isInWatchlist) {
+      this.watchlistService.removeFromWatchlist(movieId);
+    } else {
+      this.watchlistService.addToWatchlist({
+        id: movieId,
+        title: this.title(),
+        posterPath: this.posterPath(),
+        releaseDate: this.releaseDate(),
+        voteAverage: this.voteAverage()
+      });
+    }
+  }
 } 

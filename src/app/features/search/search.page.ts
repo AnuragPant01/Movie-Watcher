@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { DecimalPipe, AsyncPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -16,7 +16,7 @@ import { TmdbMovieSummary, TmdbPersonSummary } from '../../core/tmdb.models';
   templateUrl: './search.page.html',
   styleUrl: './search.page.scss'
 })
-export class SearchPage {
+export class SearchPage implements OnInit {
   private readonly api = inject(TmdbService);
 
   q = new FormControl<string>('', { nonNullable: true });
@@ -51,5 +51,14 @@ export class SearchPage {
       .subscribe((res) => {
         this.peopleResults.set(res.results);
       });
+  }
+
+  ngOnInit(): void {
+    // Scroll to top when the page loads
+    this.scrollToTop();
+  }
+
+  private scrollToTop(): void {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 } 

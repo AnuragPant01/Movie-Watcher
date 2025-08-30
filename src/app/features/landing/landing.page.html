@@ -7,14 +7,17 @@
       <button type="button" class="px-3 py-2 rounded-full border border-gray-300 dark:border-gray-700 hover:border-brand-600 hover:text-brand-700 dark:hover:text-brand-50 transition"
               [class.bg-brand-600]="selectedMood() === 'feel-good'"
               [class.text-white]="selectedMood() === 'feel-good'"
+              [disabled]="loading()"
               (click)="selectMood('feel-good')">Feel Good</button>
       <button type="button" class="px-3 py-2 rounded-full border border-gray-300 dark:border-gray-700 hover:border-brand-600 hover:text-brand-700 dark:hover:text-brand-50 transition"
               [class.bg-brand-600]="selectedMood() === 'action-fix'"
               [class.text-white]="selectedMood() === 'action-fix'"
+              [disabled]="loading()"
               (click)="selectMood('action-fix')">Action Fix</button>
       <button type="button" class="px-3 py-2 rounded-full border border-gray-300 dark:border-gray-700 hover:border-brand-600 hover:text-brand-700 dark:hover:text-brand-50 transition"
               [class.bg-brand-600]="selectedMood() === 'mind-benders'"
               [class.text-white]="selectedMood() === 'mind-benders'"
+              [disabled]="loading()"
               (click)="selectMood('mind-benders')">Mind Benders</button>
 
       <a routerLink="/search" class="ml-auto inline-flex items-center gap-2 text-sm underline-offset-4 hover:underline">Go to Search →</a>
@@ -23,20 +26,29 @@
     <div class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-brand-600/10 blur-2xl"></div>
   </div>
 
-  @if (loading()) {
-    <div class="p-6">Loading…</div>
-  } @else if (error()) {
-    <div class="p-6 text-red-600">{{ error() }}</div>
-  } @else if (movies().length) {
-    <app-row title="Top picks for your mood">
-      @for (m of movies(); track m.id; let idx = $index) {
-        <div class="relative flex-none w-[180px] sm:w-[200px] min-w-[180px] sm:min-w-[200px] snap-start">
-          <div class="absolute -left-2 -top-2 z-10 text-lg font-bold text-gray-800 dark:text-gray-200 drop-shadow">{{ idx + 1 }}.</div>
-          <app-movie-card [id]="m.id" [title]="m.title" [posterPath]="m.poster_path" [releaseDate]="m.release_date" [voteAverage]="m.vote_average" [compact]="true" />
+  <div class="relative min-h-[400px]">
+    @if (loading()) {
+      <div class="absolute inset-0 flex items-center justify-center">
+        <div class="flex flex-col items-center gap-4">
+          <div class="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
+          <p class="text-gray-600 dark:text-gray-400">Loading movies...</p>
         </div>
-      }
-    </app-row>
-  } @else if (selectedMood()) {
-    <div class="p-6 text-gray-600">No results.</div>
-  }
+      </div>
+    } @else if (error()) {
+      <div class="p-6 text-red-600 text-center">{{ error() }}</div>
+    } @else if (movies().length) {
+      <div class="transition-opacity duration-300" [class.opacity-0]="loading()">
+        <app-row title="Top picks for your mood">
+          @for (m of movies(); track m.id; let idx = $index) {
+            <div class="relative flex-none w-[180px] sm:w-[200px] min-w-[180px] sm:min-w-[200px] snap-start">
+              <div class="absolute -left-2 -top-2 z-10 text-lg font-bold text-gray-800 dark:text-gray-200 drop-shadow">{{ idx + 1 }}.</div>
+              <app-movie-card [id]="m.id" [title]="m.title" [posterPath]="m.poster_path" [releaseDate]="m.release_date" [voteAverage]="m.vote_average" [compact]="true" />
+            </div>
+          }
+        </app-row>
+      </div>
+    } @else {
+      <div class="p-6 text-gray-600 text-center">No results.</div>
+    }
+  </div>
 </section> 

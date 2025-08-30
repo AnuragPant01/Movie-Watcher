@@ -1,6 +1,6 @@
 <div class="w-20">
   @if (profileUrl()) {
-    <img [ngSrc]="profileUrl()!" width="80" height="80" class="w-20 h-20 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700" alt="{{ name() }}" />
+    <img [src]="profileUrl()" class="w-20 h-20 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700" alt="{{ name() }}" />
   } @else {
     <div class="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500">?</div>
   }

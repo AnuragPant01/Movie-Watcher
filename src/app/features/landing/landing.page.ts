@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
 import { DecimalPipe, AsyncPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TmdbService, MoodKey } from '../../core/tmdb.service';
@@ -15,13 +15,17 @@ import { RowComponent } from '../../shared/row/row.component';
   templateUrl: './landing.page.html',
   styleUrl: './landing.page.scss'
 })
-export class LandingPage {
+export class LandingPage implements OnInit {
   private readonly api = inject(TmdbService);
 
-  readonly selectedMood = signal<MoodKey | null>(null);
+  readonly selectedMood = signal<MoodKey>('feel-good');
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly movies = signal<TmdbDiscoverResponse['results']>([]);
+
+  ngOnInit(): void {
+    this.fetch();
+  }
 
   selectMood(mood: MoodKey): void {
     if (this.selectedMood() === mood) return;
@@ -32,18 +36,21 @@ export class LandingPage {
   private fetch(): void {
     const mood = this.selectedMood();
     if (!mood) return;
+    
     this.loading.set(true);
     this.error.set(null);
-    this.api.discoverByMood(mood).subscribe({
-      next: (res) => {
-        this.movies.set(res.results);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        this.error.set('Failed to load movies.');
-        this.loading.set(false);
-        console.error(err);
-      },
-    });
+    setTimeout(() => {
+      this.api.discoverByMood(mood).subscribe({
+        next: (res) => {
+          this.movies.set(res.results);
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.error.set('Failed to load movies.');
+          this.loading.set(false);
+          console.error(err);
+        },
+      });
+    }, 100);
   }
 } 

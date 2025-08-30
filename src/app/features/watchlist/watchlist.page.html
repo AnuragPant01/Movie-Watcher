@@ -1,0 +1,54 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">My Watchlist</h1>
+      <p class="text-gray-600 dark:text-gray-400 mt-1">
+        @if (watchlistCount() > 0) {
+          {{ watchlistCount() }} movie{{ watchlistCount() === 1 ? '' : 's' }} saved
+        } @else {
+          No movies saved yet
+        }
+      </p>
+    </div>
+    @if (watchlistCount() > 0) {
+      <button 
+        (click)="clearWatchlist()"
+        class="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+      >
+        Clear All
+      </button>
+    }
+  </div>
+
+  @if (watchlistCount() > 0) {
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      @for (movie of watchlist(); track movie.id) {
+        <app-movie-card
+          [id]="movie.id"
+          [title]="movie.title"
+          [posterPath]="movie.posterPath"
+          [releaseDate]="movie.releaseDate"
+          [voteAverage]="movie.voteAverage"
+        />
+      }
+    </div>
+  } @else {
+    <div class="text-center py-12">
+      <div class="w-16 h-16 mx-auto mb-4 text-gray-400">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Your watchlist is empty</h3>
+      <p class="text-gray-600 dark:text-gray-400 mb-6">
+        Start exploring movies and add them to your watchlist to see them here.
+      </p>
+      <a 
+        routerLink="/" 
+        class="inline-flex items-center px-4 py-2 bg-brand-600 text-white font-medium rounded-lg hover:bg-brand-700 transition-colors"
+      >
+        Discover Movies
+      </a>
+    </div>
+  }
+</div> 
