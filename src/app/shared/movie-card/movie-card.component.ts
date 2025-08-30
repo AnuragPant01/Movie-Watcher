@@ -29,7 +29,10 @@ export class MovieCardComponent {
 
   readonly releaseYear = computed(() => {
     const date = this.releaseDate();
-    return date ? new Date(date).getFullYear() : '—';
+    if (!date) return '—';
+    
+    const year = new Date(date).getFullYear();
+    return isNaN(year) ? '—' : year;
   });
 
   readonly isInWatchlist = computed(() => {
