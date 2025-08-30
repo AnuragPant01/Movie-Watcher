@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit, HostListener } from '@angular/core';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { DecimalPipe, AsyncPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -22,8 +22,12 @@ export class SearchPage implements OnInit {
   q = new FormControl<string>('', { nonNullable: true });
 
   readonly loading = signal(false);
+  readonly loadingMore = signal(false);
   readonly movieResults = signal<TmdbMovieSummary[]>([]);
   readonly peopleResults = signal<TmdbPersonSummary[]>([]);
+  readonly currentPage = signal(1);
+  readonly hasMorePages = signal(true);
+  readonly searchTerm = signal('');
 
   constructor() {
     this.q.valueChanges
@@ -33,11 +37,15 @@ export class SearchPage implements OnInit {
         filter((v) => v.trim().length > 0),
         switchMap((term) => {
           this.loading.set(true);
-          return this.api.searchMovies(term);
+          this.currentPage.set(1);
+          this.hasMorePages.set(true);
+          this.searchTerm.set(term);
+          return this.api.searchMovies(term, 1);
         })
       )
       .subscribe((res) => {
         this.movieResults.set(res.results);
+        this.hasMorePages.set(res.total_pages > 1);
         this.loading.set(false);
       });
 
@@ -54,8 +62,47 @@ export class SearchPage implements OnInit {
   }
 
   ngOnInit(): void {
-    // Scroll to top when the page loads
     this.scrollToTop();
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  onScroll(): void {
+    if (this.shouldLoadMore()) {
+      this.loadMore();
+    }
+  }
+
+  private shouldLoadMore(): boolean {
+    if (this.loading() || this.loadingMore() || !this.hasMorePages() || !this.searchTerm().trim()) {
+      return false;
+    }
+
+    const scrollPosition = window.scrollY + window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    const threshold = 200;
+
+    return scrollPosition >= documentHeight - threshold;
+  }
+
+  private loadMore(): void {
+    if (this.loadingMore()) return;
+    
+    const nextPage = this.currentPage() + 1;
+    this.loadingMore.set(true);
+    
+    this.api.searchMovies(this.searchTerm(), nextPage).subscribe({
+      next: (res) => {
+        const currentMovies = this.movieResults();
+        this.movieResults.set([...currentMovies, ...res.results]);
+        this.currentPage.set(nextPage);
+        this.hasMorePages.set(nextPage < res.total_pages);
+        this.loadingMore.set(false);
+      },
+      error: (err) => {
+        this.loadingMore.set(false);
+        console.error('Error loading more movies:', err);
+      },
+    });
   }
 
   private scrollToTop(): void {

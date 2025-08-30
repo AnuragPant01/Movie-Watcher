@@ -45,7 +45,35 @@
               <app-movie-card [id]="m.id" [title]="m.title" [posterPath]="m.poster_path" [releaseDate]="m.release_date" [voteAverage]="m.vote_average" [compact]="true" />
             </div>
           }
+          
+          <!-- Loading More Indicator at End of Row -->
+          @if (hasMorePages()) {
+            <div class="flex-none w-[180px] sm:w-[200px] min-w-[180px] sm:min-w-[200px] snap-start flex items-center justify-center">
+              <button 
+                (click)="loadMore()" 
+                [disabled]="loadingMore()"
+                class="w-full h-full min-h-[270px] flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-brand-600 dark:hover:border-brand-400 transition-colors"
+              >
+                @if (loadingMore()) {
+                  <div class="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin mb-2"></div>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Loading...</p>
+                } @else {
+                  <svg class="w-8 h-8 text-gray-400 dark:text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Load More</p>
+                }
+              </button>
+            </div>
+          }
         </app-row>
+        
+        <!-- End of Results -->
+        @if (!hasMorePages() && movies().length > 0) {
+          <div class="text-center py-8">
+            <p class="text-sm text-gray-500 dark:text-gray-400">You've reached the end of the results</p>
+          </div>
+        }
       </div>
     } @else {
       <div class="p-6 text-gray-600 text-center">No results.</div>

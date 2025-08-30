@@ -30,6 +30,9 @@ export class MovieDetailPage implements OnInit {
   readonly videos = signal<any[]>([]);
   readonly cast = signal<any[]>([]);
   readonly similar = signal<any[]>([]);
+  readonly loadingMoreSimilar = signal(false);
+  readonly similarCurrentPage = signal(1);
+  readonly hasMoreSimilarPages = signal(true);
 
   readonly genreList = computed(() => {
     const d = this.details();
@@ -59,6 +62,27 @@ export class MovieDetailPage implements OnInit {
     this.scrollToTop();
   }
 
+  loadMoreSimilar(): void {
+    if (this.loadingMoreSimilar() || !this.hasMoreSimilarPages() || !this.id()) return;
+    
+    const nextPage = this.similarCurrentPage() + 1;
+    this.loadingMoreSimilar.set(true);
+    
+    this.api.getSimilarMovies(this.id()!, nextPage).subscribe({
+      next: (res) => {
+        const currentSimilar = this.similar();
+        this.similar.set([...currentSimilar, ...res.results]);
+        this.similarCurrentPage.set(nextPage);
+        this.hasMoreSimilarPages.set(nextPage < res.total_pages);
+        this.loadingMoreSimilar.set(false);
+      },
+      error: (err) => {
+        this.loadingMoreSimilar.set(false);
+        console.error('Error loading more similar movies:', err);
+      },
+    });
+  }
+
   private scrollToTop(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -66,13 +90,21 @@ export class MovieDetailPage implements OnInit {
   private fetch(id: number): void {
     this.loading.set(true);
     this.error.set(null);
+    this.similarCurrentPage.set(1);
+    this.hasMoreSimilarPages.set(true);
+    
     this.api.getMovieDetails(id).subscribe({
       next: (d) => this.details.set(d),
       error: () => this.error.set('Failed to load details'),
     });
     this.api.getMovieVideos(id).subscribe({ next: (v) => this.videos.set(v.results) });
     this.api.getMovieCredits(id).subscribe({ next: (c) => this.cast.set(c.cast) });
-    this.api.getSimilarMovies(id).subscribe({ next: (s) => this.similar.set(s.results) });
+    this.api.getSimilarMovies(id, 1).subscribe({ 
+      next: (s) => {
+        this.similar.set(s.results);
+        this.hasMoreSimilarPages.set(s.total_pages > 1);
+      }
+    });
     this.loading.set(false);
   }
 

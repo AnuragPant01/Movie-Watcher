@@ -20,8 +20,11 @@ export class LandingPage implements OnInit {
 
   readonly selectedMood = signal<MoodKey>('feel-good');
   readonly loading = signal(false);
+  readonly loadingMore = signal(false);
   readonly error = signal<string | null>(null);
   readonly movies = signal<TmdbDiscoverResponse['results']>([]);
+  readonly currentPage = signal(1);
+  readonly hasMorePages = signal(true);
 
   ngOnInit(): void {
     this.fetch();
@@ -30,7 +33,30 @@ export class LandingPage implements OnInit {
   selectMood(mood: MoodKey): void {
     if (this.selectedMood() === mood) return;
     this.selectedMood.set(mood);
+    this.currentPage.set(1);
+    this.hasMorePages.set(true);
     this.fetch();
+  }
+
+  loadMore(): void {
+    if (this.loadingMore() || !this.hasMorePages()) return;
+    
+    const nextPage = this.currentPage() + 1;
+    this.loadingMore.set(true);
+    
+    this.api.discoverByMood(this.selectedMood(), nextPage).subscribe({
+      next: (res) => {
+        const currentMovies = this.movies();
+        this.movies.set([...currentMovies, ...res.results]);
+        this.currentPage.set(nextPage);
+        this.hasMorePages.set(nextPage < res.total_pages);
+        this.loadingMore.set(false);
+      },
+      error: (err) => {
+        this.loadingMore.set(false);
+        console.error('Error loading more movies:', err);
+      },
+    });
   }
 
   private fetch(): void {
@@ -40,9 +66,11 @@ export class LandingPage implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     setTimeout(() => {
-      this.api.discoverByMood(mood).subscribe({
+      this.api.discoverByMood(mood, 1).subscribe({
         next: (res) => {
           this.movies.set(res.results);
+          this.currentPage.set(1);
+          this.hasMorePages.set(res.total_pages > 1);
           this.loading.set(false);
         },
         error: (err) => {
